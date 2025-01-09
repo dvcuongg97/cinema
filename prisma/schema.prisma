@@ -1,0 +1,157 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//
+model User {
+  id          String    @id @default(uuid())
+  name        String
+  email       String    @unique
+  phoneNumber String
+  password    String
+  role        Role      @default(CUSTOMER)
+  // Seats   Seat[]
+  Payment     Payment[]
+}
+
+model Movie {
+  id      String     @id @default(uuid())
+  title   String     @unique
+  genre   MovieGenre
+  trailer String
+  image   String
+
+  duration    Int        @default(0)
+  rating      Float      @default(0)
+  description String?
+  releaseDate DateTime   @default(now())
+  language    String
+  Showtimes   Showtime[]
+  Cinema      Cinema[]
+}
+
+model Cinema {
+  id      String   @id @unique @default(uuid())
+  Movies  Movie[]
+  Screens Screen[]
+
+  name          String @unique
+  location      String
+  contactNumber String
+
+  // Movie Movie? @relation(fields: [movie_id], references: [id])
+}
+
+model Screen {
+  id        String @id @default(uuid())
+  cinema_id String
+
+  name     String @unique
+  capacity Int
+
+  // Seats     Seat[]
+  Showtimes Showtime[]
+
+  Cinema Cinema? @relation(fields: [cinema_id], references: [id])
+}
+
+model Seat {
+  id          String @id @default(uuid())
+  // screen_id   String
+  showtime_id String
+  payment_id  String @unique
+
+  seatRow    SeatRow
+  seatNumber Int        @unique
+  type       SeatType
+  price      Int
+  status     SeatStatus @default(EMPTY)
+
+  // Screen   Screen   @relation(fields: [screen_id], references: [id])
+  Showtime Showtime? @relation(fields: [showtime_id], references: [id])
+  Payment  Payment?  @relation(fields: [payment_id], references: [id])
+}
+
+model Showtime {
+  id String @id @default(uuid())
+
+  movie_id  String
+  screen_id String
+
+  showDate  DateTime
+  startTime DateTime
+  endTime   DateTime
+
+  Movie  Movie  @relation(fields: [movie_id], references: [id])
+  Screen Screen @relation(fields: [screen_id], references: [id])
+  Seats  Seat[]
+}
+
+model Payment {
+  //
+  id            String        @id @default(uuid())
+  user_id       String
+  Seats         Seat[]
+  paymentDate   DateTime      @default(now())
+  paymentMethod PaymentMethod
+  totalAmount   Float?
+  status        PaymentStatus @default(SUCCESSFUL)
+  User          User          @relation(fields: [user_id], references: [id])
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum SeatType {
+  REGULAR
+  PREMIUM
+}
+
+enum SeatRow {
+  A
+  B
+  C
+  D
+  E
+  F
+}
+
+enum SeatStatus {
+  EMPTY
+  BOOKED
+}
+
+enum CartStatus {
+  PENDING
+  PAYMENTED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  PAYPAL
+}
+
+enum PaymentStatus {
+  SUCCESSFUL
+  FAILED
+}
+
+enum MovieGenre {
+  VIETNAM
+  KOREA
+  US
+  JAPAN
+}
