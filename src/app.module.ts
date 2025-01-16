@@ -13,6 +13,7 @@ import { ValidationModule } from 'src/validations/validation.module';
 import { UserModule } from './user/user.module';
 import { PaymentModule } from './payment/payment.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { RatingModule } from './rating/rating.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     ValidationModule,
     UserModule,
     PaymentModule,
-    CloudinaryModule
+    CloudinaryModule,
+    RatingModule
   ],
 })
 export class AppModule { }

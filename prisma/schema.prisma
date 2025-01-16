@@ -20,25 +20,42 @@ model User {
   email       String    @unique
   phoneNumber String
   password    String
-  role        Role      @default(CUSTOMER)
+  role        String    @default("GUEST")
   // Seats   Seat[]
   Payment     Payment[]
 }
 
 model Movie {
-  id      String     @id @default(uuid())
-  title   String     @unique
-  genre   MovieGenre
-  trailer String
-  image   String
+  id       String  @id @default(uuid())
+  title    String  @unique
+  slug     String  @unique
+  trailer  String? @default("default-trailer-url")
+  image    String? @default("default-image-url")
+  genre_id String
 
   duration    Int        @default(0)
-  rating      Float      @default(0)
+  rating      Rating[]
   description String?
   releaseDate DateTime   @default(now())
-  language    String
+  language    Language   @default(VIETSUB)
   Showtimes   Showtime[]
   Cinema      Cinema[]
+  Genre       Genre?     @relation(fields: [genre_id], references: [id])
+}
+
+model Rating {
+  id       String @id @default(uuid())
+  movie_id String @unique
+  user_id  String @unique
+  score    Int    @default(0)
+
+  Movie Movie @relation(fields: [movie_id], references: [id])
+}
+
+model Genre {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  Movies Movie[]
 }
 
 model Cinema {
@@ -110,10 +127,10 @@ model Payment {
   User          User          @relation(fields: [user_id], references: [id])
 }
 
-enum Role {
-  CUSTOMER
-  ADMIN
-}
+// enum Role {
+//   CUSTOMER
+//   ADMIN
+// }
 
 enum SeatType {
   REGULAR
@@ -149,9 +166,7 @@ enum PaymentStatus {
   FAILED
 }
 
-enum MovieGenre {
-  VIETNAM
-  KOREA
-  US
-  JAPAN
+enum Language {
+  VIETSUB
+  VIETDUB
 }

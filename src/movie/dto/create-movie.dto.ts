@@ -1,20 +1,21 @@
-import { MovieGenre } from "@prisma/index";
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from "class-validator";
+import { Language } from "@prisma/index";
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from "class-validator";
 
 export class CreateMovieDto {
 
   @IsString()
+  @IsNotEmpty()
   title: string
 
   @IsString()
-  genre: MovieGenre
-
+  slug: string
 
   @IsString()
+  @IsNotEmpty()
   description: string
 
-  @IsString()
-  language: string
+  @IsEnum(Language)
+  language: Language
 
   @IsString()
   trailer: string
@@ -28,7 +29,7 @@ export class CreateMovieDto {
   @IsOptional()
   duration?: number;
 
-  @IsOptional()
-  rating?: number;
+  // @IsOptional()
+  // rating?: number;
 
 }

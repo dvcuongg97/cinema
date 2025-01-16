@@ -1,5 +1,4 @@
 import {
-    BadRequestException,
     Injectable,
     UnauthorizedException,
 } from "@nestjs/common";
@@ -8,7 +7,6 @@ import * as argon2 from "argon2";
 import { AuthDto } from "./dto/auth.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
-import { ValidationService } from "src/validations/validation.service";
 import { UserService } from "src/user/user.service";
 
 
@@ -19,7 +17,6 @@ export class AuthService {
         private prisma: PrismaService,
         private userService: UserService,
         private jwt: JwtService,
-
     ) { }
 
     // register
@@ -43,18 +40,23 @@ export class AuthService {
 
         const usr = await this.validateUser(dto)
 
-        const payload = { username: usr.email, sub: usr.userId };
+        const payload = {
+            username: usr.email,
+            sub: usr.userId,
+            role: usr.role
+        };
         const access_token = this.jwt.sign(payload)
-
         return { usr, access_token }
     }
-
-    //sign out
+    // sign out
     async signOut() {
         return 'sign out'
     }
-
-    async validateUser(dto: { email: string; password: string }): Promise<any> {
+    // validate
+    async validateUser(dto: {
+        email: string;
+        password: string
+    }): Promise<any> {
         // verify pw
         const usr = await this.prisma.user.findFirst({
             where: { email: dto.email }

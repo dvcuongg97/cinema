@@ -3,7 +3,8 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { title } from 'process';
-import { Prisma } from '@prisma/index';
+// import { Prisma } from '@prisma/index';
+import slugify from 'slugify';
 
 @Injectable()
 export class MovieService {
@@ -13,9 +14,12 @@ export class MovieService {
 
   // create
   async create(createMovieDto: CreateMovieDto) {
-    const movieCheck = this.movieCheck(createMovieDto.title)
-    if (movieCheck)
+    const titleCheck = this.titleCheck(createMovieDto.title)
+    if (titleCheck)
       throw new BadRequestException(`${createMovieDto.title} Already Exists`)
+
+    createMovieDto.slug = this.toSlug(createMovieDto.title)
+
     const newMovie = await this.prisma.movie
       .create({ data: { ...createMovieDto } })
     //
@@ -62,7 +66,7 @@ export class MovieService {
   // remove
   async remove(title: string) {
 
-    const rs = await this.movieCheck(title)
+    const rs = await this.titleCheck(title)
     if (!rs) throw new BadRequestException(`${title} Not Found`)
 
     const deletePosts = this.prisma.movie.deleteMany({
@@ -79,10 +83,21 @@ export class MovieService {
     return transaction ? true : null
   }
   /// common
-  async movieCheck(title: string) {
+  async titleCheck(title: string) {
     return await this.prisma.movie.count({ where: { title } })
   }
   async idCheck(id: string) {
     return await this.prisma.movie.count({ where: { id } })
   }
+  toSlug(str: string) {
+    return slugify(str, {
+      replacement: '-',  // replace spaces with replacement character, defaults to `-`
+      remove: undefined, // remove characters that match regex, defaults to `undefined`
+      lower: false,      // convert to lower case, defaults to `false`
+      strict: false,     // strip special characters except replacement, defaults to `false`
+      locale: 'vi',      // language code of the locale to use
+      trim: true         // trim leading and trailing replacement chars, defaults to `true`
+    })
+  }
+
 }
