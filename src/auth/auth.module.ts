@@ -1,26 +1,36 @@
-import { JwtModule } from "@nestjs/jwt";
-import { PassportModule } from "@nestjs/passport";
-import { AuthController } from "src/auth/auth.controller";
-import { AuthService } from "src/auth/auth.service";
-import { LocalAuthGuard } from "src/guards/passport/local-auth.guard";
-import { LocalStrategy } from "src/guards/passport/local.strategy";
-import { PrismaService } from "src/prisma/prisma.service";
-// import { UserService } from "src/user/user.service";
+import { Global } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { AuthController } from 'src/auth/auth.controller';
+import { AuthService } from 'src/auth/auth.service';
+import { jwtConstants } from 'src/auth/constant';
+import { JwtStrategy } from 'src/guards/passport/jwt.strategy';
 
-const { Module } = require("@nestjs/common");
+const { Module } = require('@nestjs/common');
 
+@Global()
 @Module({
-    imports: [
-        JwtModule.register({
-            secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '60m' }
-        }),
-        PassportModule,
+  imports: [
+    ConfigModule.forRoot(),
+    PassportModule,
+    // JwtModule.registerAsync({
+    //   imports: [ConfigModule],
+    //   useFactory: async (configService: ConfigService) => ({
+    //     secret: configService.get<string>('JWT_SECRET_KEY'),
+    //     signOptions: {
+    //       expiresIn: configService.get<string>('JWT_EXPIRATION_TIME') || '1h',
+    //     },
+    //   }),
+    //   inject: [ConfigService],
+    // }),
+    JwtModule.register({
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '60s' },
+    })
+  ],
 
-    ],
-    controllers: [AuthController],
-    providers: [AuthService, LocalStrategy, LocalAuthGuard]
+  controllers: [AuthController],
+  providers: [AuthService, JwtService, JwtStrategy],
 })
-
-export class AuthModule { }
-
+export class AuthModule {}
